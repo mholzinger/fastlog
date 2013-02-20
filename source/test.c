@@ -14,5 +14,14 @@ int main()
 
     closelogfile();
 
+    logpath("/var/log/syslog");
+
+    logf("this message should get written to syslog");
+    closelogfile();
+
+    logpath(NULL);
+    logf("this message should appear underneath a  fastlog error statement");
+    closelogfile();
+
     return 0;
 }

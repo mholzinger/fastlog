@@ -1,6 +1,7 @@
 #include "fastlog.h"
 
 /* globals */
+int logerror = 0;
 char* logfilename = NULL;
 FILE* logfp = NULL;
 
@@ -21,6 +22,13 @@ void logf(const char* output, ...)
     vsprintf (logstring, output, args);
     va_end (args);
 
+    /* If logerror is set, write to syslog instead */
+    if (logerror == TRUE)
+    {
+        writesyslog(logstring);
+        return;
+    }
+
     (void)fwrite(logstring, 1, strlen(logstring), logfp);
 
 }
@@ -29,11 +37,20 @@ void logf(const char* output, ...)
 int openlogfile(char* logfilename)
 {
     if (logfilename == NULL)
-        return 1;
+    {
+        writesyslog("openlogfile err: logfilename is unset (null)");
+        logerror = TRUE;
+        return logerror;
+    }
 
     logfp = fopen((const char*)logfilename, (const char*)"wb");
     if (logfp == NULL)
-        return 1;
+    {
+        writesyslog("openlogfile err: fopen failed for logfilename <%s>",
+        logfilename);
+        logerror = TRUE;
+        return logerror;
+    }
 
     return 0;
 }
@@ -41,7 +58,23 @@ int openlogfile(char* logfilename)
 /*---------------------------------------------------------------------------*/
 void closelogfile(void)
 {
-    (void)fclose(logfp);
+    if (logfp != NULL) (void)fclose(logfp);
+}
+
+/*---------------------------------------------------------------------------*/
+void writesyslog (const char* format, ...)
+{
+     char logstring[1024];
+
+     va_list args;
+     va_start (args, format);
+     vsprintf (logstring, format, args);
+     va_end (args);
+
+//     setlogmask (LOG_UPTO (LOG_NOTICE));
+     openlog("fastlog", LOG_CONS | LOG_PID | LOG_NDELAY, LOG_LOCAL1);
+     syslog(LOG_NOTICE, logstring, getuid ());
+     closelog();
 }
 
 /*---------------------------------------------------------------------------*/
