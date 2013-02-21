@@ -6,6 +6,12 @@ char* logfilename = NULL;
 FILE* logfp = NULL;
 
 /*---------------------------------------------------------------------------*/
+char* getlogpath(void)
+{
+    return logfilename;
+}
+
+/*---------------------------------------------------------------------------*/
 void logpath(char* logfile)
 {
     logfilename = logfile;
@@ -18,12 +24,12 @@ void logf(const char* output, ...)
     char logstring[1024];
 
     va_list args;
-    va_start (args, output);
-    vsprintf (logstring, output, args);
-    va_end (args);
+    va_start(args, output);
+    vsprintf(logstring, output, args);
+    va_end(args);
 
-    /* If logerror is set, write to syslog instead */
-    if (logerror == TRUE)
+    /* If logerror is set or no FILE* is open, write to syslog instead */
+    if ((logerror == TRUE) || (logfp == NULL))
     {
         writesyslog(logstring);
         return;
@@ -52,13 +58,15 @@ int openlogfile(char* logfilename)
         return logerror;
     }
 
-    return 0;
+    logerror =  FALSE;
+    return logerror;
 }
 
 /*---------------------------------------------------------------------------*/
 void closelogfile(void)
 {
     if (logfp != NULL) (void)fclose(logfp);
+    logfp = NULL;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -71,7 +79,7 @@ void writesyslog (const char* format, ...)
      vsprintf (logstring, format, args);
      va_end (args);
 
-//     setlogmask (LOG_UPTO (LOG_NOTICE));
+     setlogmask (LOG_UPTO (LOG_NOTICE));
      openlog("fastlog", LOG_CONS | LOG_PID | LOG_NDELAY, LOG_LOCAL1);
      syslog(LOG_NOTICE, logstring, getuid ());
      closelog();

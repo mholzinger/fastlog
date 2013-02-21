@@ -12,5 +12,6 @@ void logf(const char* output, ...);
 int openlogfile(char* logfilename);
 void closelogfile(void);
 void writesyslog(const char* format, ...);
+char* getlogpath(void);
 
 enum {TRUE = 1, FALSE = 0};
