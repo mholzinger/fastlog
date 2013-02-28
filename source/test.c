@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include "fastlog.h"
 
-int main()
+int main(void)
 {
     logpath("/tmp/test_one.log");
 

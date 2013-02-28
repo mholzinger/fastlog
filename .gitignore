@@ -1,5 +1,8 @@
 test
-test.o
-flog.o
+*.o
 core
+.cproject
+.project
+.settings/
+libfastlog.*
 
