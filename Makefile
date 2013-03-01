@@ -1,4 +1,4 @@
-# Makefile for fastlog API.
+# Makefile for flog API.
 # Compatible with Linux, Darwin
 
 VERSION    = $(VERMAJOR).$(VERMINOR).$(VERSUBMIN)
@@ -15,7 +15,7 @@ ln_sf    := ln -sf
 # directory vars
 LIB64    := lib$(shell [ -d /usr/lib64 ] && echo 64)
 HOMEDIR  := $(shell echo $$HOME)
-LOGHEADER = libfastlog
+LOGHEADER = libflog
 PROGHDRS := include
 
 FILES = Makefile           \
@@ -33,8 +33,8 @@ RM       := rm -rf
 
 ## project vars
 TESTPROG := test
-PROG     := libfastlog
-PROGOBJS := test.o fastlog.o
+PROG     := libflog
+PROGOBJS := test.o flog.o
 
 # Remove $(junk) from all project $(DIRS)
 DIRS  :=
@@ -111,7 +111,7 @@ endif
 
 all: clean $(PROGOBJS) $(LIBNAME) $(TESTPROG)
 
-fastlog.o: flog.c
+flog.o: flog.c
 	@echo 'Building target: $@'
 	$(COMPILE_LIB) $(BUILD_ARCH) $(LINKOPT) $(OUTPUT_OPTION) $^
 	@echo 'Finished building target: $@'
@@ -123,14 +123,14 @@ test.o: test.c
 	@echo 'Finished building target: $@'
 	@echo
 
-$(TESTPROG): $(TESTPROG).o fastlog.o
+$(TESTPROG): $(TESTPROG).o flog.o
 	@echo 'Building target: $@'
-	$(COMPILE_EX) -o $(TESTPROG) $(TESTPROG).o fastlog.o
+	$(COMPILE_EX) -o $(TESTPROG) $(TESTPROG).o flog.o
 	@echo 'Finished building target: $@'
 	@echo
 
 #$(LIBNAME): $(PROGOBJS)
-$(LIBNAME): fastlog.o
+$(LIBNAME): flog.o
 	@printf "#\n# Building $@\n"
 	$(CC) $(BUILD_ARCH) $(BUILD_LIB) $(OUTPUT_OPTION) $^ $(CLIB)
 	@echo 'Finished building target: $@'
@@ -172,8 +172,8 @@ install: uninstall
 		$(CP) $(LIBNAME) $(LIBDIR) ; \
 		$(ln_sf) $(LIBDIR)/$(LIBNAME) $(LIBDIR)/$(PROG).$(SOEXT); \
 	fi
-	mkdir -p $(DESTDIR)/usr/include/fastlog
-	$(CP) include/fastlog.h $(DESTDIR)/usr/include/fastlog/
+	mkdir -p $(DESTDIR)/usr/include/flog
+	$(CP) include/flog.h $(DESTDIR)/usr/include/flog/
 	@printf "# ...finito\n"
 
 .PHONY: uninstall

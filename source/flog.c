@@ -1,4 +1,4 @@
-#include "fastlog.h"
+#include "flog.h"
 
 /* globals */
 int logerror = 0;
@@ -19,7 +19,7 @@ void logpath(char* logfile)
 }
 
 /*---------------------------------------------------------------------------*/
-void logf(const char* output, ...)
+void flog(const char* output, ...)
 {
     char logstring[1024];
 
