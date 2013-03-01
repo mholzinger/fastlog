@@ -29,7 +29,7 @@ void flog(const char* output, ...)
     va_end(args);
 
     /* If logerror is set or no FILE* is open, write to syslog instead */
-    if ((logerror == TRUE) || (logfp == NULL))
+    if ((logerror == LOG_ERROR) || (logfp == NULL))
     {
         writesyslog(logstring);
         return;
@@ -45,7 +45,7 @@ int openlogfile(char* logfilename)
     if (logfilename == NULL)
     {
         writesyslog("openlogfile err: logfilename is unset (null)");
-        logerror = TRUE;
+        logerror = LOG_ERROR;
         return logerror;
     }
 
@@ -53,12 +53,12 @@ int openlogfile(char* logfilename)
     if (logfp == NULL)
     {
         writesyslog("openlogfile err: fopen failed for logfilename <%s>",
-        logfilename);
-        logerror = TRUE;
+            logfilename);
+        logerror = LOG_ERROR;
         return logerror;
     }
 
-    logerror =  FALSE;
+    logerror = NO_ERROR;
     return logerror;
 }
 
@@ -79,8 +79,8 @@ void writesyslog (const char* format, ...)
      vsprintf (logstring, format, args);
      va_end (args);
 
-     setlogmask (LOG_UPTO (LOG_NOTICE));
-     openlog("fastlog", LOG_CONS | LOG_PID | LOG_NDELAY, LOG_LOCAL1);
+     setlogmask(LOG_UPTO (LOG_NOTICE));
+     openlog("libflog", LOG_CONS | LOG_PID | LOG_NDELAY, LOG_LOCAL1);
      syslog(LOG_NOTICE, logstring, getuid ());
      closelog();
 }
