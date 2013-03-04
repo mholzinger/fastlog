@@ -44,24 +44,22 @@ void flog(const char* output, ...)
 /*----------------------------------------------------------------------------*/
 void flushlog(void)
 {
-	int errno_state;
-	int irc;
+    int errno_state;
+    int irc;
 
-	errno = 0;
-	if (logfp != NULL) irc = fflush(logfp);
-	if (irc)
-	{
-		errno_state = errno;
-		writesyslog(
-			"flushlog fflush failed for log file <%s>\n", getlogpath());
-		writesyslog("errno <%d>\n", errno_state);
-//		perror(errno_state);
-//		exit(LOG_ERROR); /* can't exit from shared library */
+    errno = 0;
+    if (logfp != NULL) irc = fflush(logfp);
+    if (irc)
+    {
+        errno_state = errno;
+        writesyslog(
+            "flushlog fflush failed for log file <%s>\n", getlogpath());
+        writesyslog("errno <%d>\n", errno_state);
+//        perror(errno_state);
 
-		/* Set global error state */
-		logerror = LOG_ERROR;
-	}
-
+        /* Set global error state */
+        logerror = LOG_ERROR;
+    }
 }
 
 /*----------------------------------------------------------------------------*/
@@ -101,14 +99,14 @@ int openlogfile(char* logfilename)
 }
 
 /*----------------------------------------------------------------------------*/
-void writesyslog (const char* format, ...)
+void writesyslog(const char* format, ...)
 {
      char logstring[1024];
 
      va_list args;
-     va_start (args, format);
-     vsprintf (logstring, format, args);
-     va_end (args);
+     va_start(args, format);
+     vsprintf(logstring, format, args);
+     va_end(args);
 
      setlogmask(LOG_UPTO (LOG_NOTICE));
      openlog("libflog", LOG_CONS | LOG_PID | LOG_NDELAY, LOG_LOCAL1);
