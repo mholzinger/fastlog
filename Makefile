@@ -4,7 +4,7 @@
 VERSION    = $(VERMAJOR).$(VERMINOR).$(VERSUBMIN)
 VERMAJOR  := 0
 VERMINOR  := 1
-VERSUBMIN := 0
+VERSUBMIN := 1
 
 # variables
 INSTALL  := install -D --owner 0 --group 0

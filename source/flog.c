@@ -6,22 +6,17 @@ char* logfilename = NULL;
 FILE* logfp = NULL;
 
 /*---------------------------------------------------------------------------*/
-char* getlogpath(void)
+void closelogfile(void)
 {
-    return logfilename;
+    if (logfp != NULL) (void)fclose(logfp);
+    logfp = NULL;
 }
 
-/*---------------------------------------------------------------------------*/
-void logpath(char* logfile)
-{
-    logfilename = logfile;
-    openlogfile(logfilename);
-}
-
-/*---------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 void flog(const char* output, ...)
 {
     char logstring[1024];
+    int array_count;
 
     va_list args;
     va_start(args, output);
@@ -35,11 +30,54 @@ void flog(const char* output, ...)
         return;
     }
 
+    /* Append newline char */
+    array_count = (int)strlen(logstring);
+    logstring[array_count++] = 0x0a;
+    logstring[array_count] = 0x00;
+
     (void)fwrite(logstring, 1, strlen(logstring), logfp);
+
+    flushlog();
 
 }
 
-/*---------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void flushlog(void)
+{
+	int errno_state;
+	int irc;
+
+	errno = 0;
+	if (logfp != NULL) irc = fflush(logfp);
+	if (irc)
+	{
+		errno_state = errno;
+		writesyslog(
+			"flushlog fflush failed for log file <%s>\n", getlogpath());
+		writesyslog("errno <%d>\n", errno_state);
+//		perror(errno_state);
+//		exit(LOG_ERROR); /* can't exit from shared library */
+
+		/* Set global error state */
+		logerror = LOG_ERROR;
+	}
+
+}
+
+/*----------------------------------------------------------------------------*/
+char* getlogpath(void)
+{
+    return logfilename;
+}
+
+/*----------------------------------------------------------------------------*/
+void logpath(char* logfile)
+{
+    logfilename = logfile;
+    openlogfile(logfilename);
+}
+
+/*----------------------------------------------------------------------------*/
 int openlogfile(char* logfilename)
 {
     if (logfilename == NULL)
@@ -62,14 +100,7 @@ int openlogfile(char* logfilename)
     return logerror;
 }
 
-/*---------------------------------------------------------------------------*/
-void closelogfile(void)
-{
-    if (logfp != NULL) (void)fclose(logfp);
-    logfp = NULL;
-}
-
-/*---------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 void writesyslog (const char* format, ...)
 {
      char logstring[1024];
@@ -81,7 +112,7 @@ void writesyslog (const char* format, ...)
 
      setlogmask(LOG_UPTO (LOG_NOTICE));
      openlog("libflog", LOG_CONS | LOG_PID | LOG_NDELAY, LOG_LOCAL1);
-     syslog(LOG_NOTICE, logstring, getuid ());
+     syslog(LOG_NOTICE, logstring, getuid());
      closelog();
 }
 

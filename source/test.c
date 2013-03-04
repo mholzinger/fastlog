@@ -6,8 +6,8 @@ int main(void)
 {
     logpath("/tmp/test_one.log");
 
-    flog("The quick brown fox jumped over the lazy dog.\n");
-    flog("int = <%d>, string = <%s>\n", (int)1234,
+    flog("The quick brown fox jumped over the lazy dog.");
+    flog("int = <%d>, string = <%s>", (int)1234,
         (char*)"string with space characters");
 
     closelogfile();
@@ -23,7 +23,7 @@ int main(void)
     closelogfile();
 
     logpath("/tmp/test_two.log");
-    flog("logerror was sucessfully unset message now appears in <%s>\n",
+    flog("logerror was sucessfully unset message now appears in <%s>",
         getlogpath());
     closelogfile();
 
