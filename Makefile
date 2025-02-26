@@ -159,8 +159,9 @@ distclean: clean
 	$(RM) $(LIBDIR)/$(PROG).[0-9].[0-9].[0-9].$(SOEXT)
 	@echo ' '
 
-.PHONY: install
-install: uninstall
+.PHONY: install uninstall
+
+install: all  # <-- Ensure the library is built before installation
 	@printf "#\n# $@ing...\n"
 	@if [ "$(OS)" = "Linux" ]; then \
 		echo "# Linux installation..."; \
@@ -169,18 +170,17 @@ install: uninstall
 		$(ln_sf) $(PROG).$(SOEXT).$(VERMAJOR) $(LIBDIR)/$(PROG).$(SOEXT); \
 	elif [ "$(OS)" = "Darwin" ]; then \
 		echo "# Darwin installation..."; \
-		$(CP) $(LIBNAME) $(LIBDIR) ; \
+		$(CP) $(LIBNAME) $(LIBDIR); \
 		$(ln_sf) $(LIBDIR)/$(LIBNAME) $(LIBDIR)/$(PROG).$(SOEXT); \
 	fi
-	mkdir -p $(DESTDIR)/usr/include/flog
-	$(CP) include/flog.h $(DESTDIR)/usr/include/flog/
+	mkdir -p $(DESTDIR)/usr/local/include/flog
+	$(CP) include/flog.h $(DESTDIR)/usr/local/include/flog/
 	@printf "# ...finito\n"
 
-.PHONY: uninstall
 uninstall:
 	@printf "#\n# $@...\n"
 	@printf "# Removing $(PROG) from $(LIBDIR) if it exists...\n"
 	$(RM) $(LIBDIR)/$(PROG).*
+	$(RM) $(DESTDIR)/usr/local/include/flog/flog.h
 	@printf "# ...finito\n"
 
-	
