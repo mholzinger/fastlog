@@ -16,7 +16,7 @@ void closelogfile(void);
 void flog(const char* output, ...);
 void flushlog(void);
 char* getlogpath(void);
-void logpath(char* logfile);
+int logpath(char* logfile);
 int openlogfile(char* logfilename);
 void writesyslog(const char* format, ...);
 #endif /*_FLOG*/

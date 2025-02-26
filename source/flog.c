@@ -74,10 +74,10 @@ char* getlogpath(void)
 }
 
 /*----------------------------------------------------------------------------*/
-void logpath(char* logfile)
+int logpath(char* logfile)
 {
     logfilename = logfile;
-    openlogfile(logfilename);
+    return openlogfile(logfilename);
 }
 
 /*----------------------------------------------------------------------------*/
