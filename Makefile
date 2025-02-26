@@ -1,5 +1,5 @@
 # Makefile for flog API.
-# Compatible with Linux, Darwin
+# Compatible with Linux, Darwin (including Apple Silicon)
 
 VERSION    = $(VERMAJOR).$(VERMINOR).$(VERSUBMIN)
 VERMAJOR  := 0
@@ -65,20 +65,19 @@ else
 	DEBUG_FLAGS   :=
 endif
 
+## architecture vars
 ifeq ($(ARCHTYPE),x86_64)
 	LARGEFILES :=
 	LIBDIR     := $(DESTDIR)/usr/lib64
-	ifeq ($(UBUNTU),Ubuntu)
-		LIBDIR := $(DESTDIR)/usr/lib
-	endif
+else ifeq ($(ARCHTYPE),arm64)
+	LARGEFILES :=
+	LIBDIR     := $(DESTDIR)/usr/lib
 else
 	LARGEFILES := -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64
 	LIBDIR     := $(DESTDIR)/usr/lib
 endif
 
-## architecture vars
-
-# 8.04 64-bit uses /usr/lib as its default and /usr/lib32 for 32-bit libs.
+# Detect Ubuntu, RHEL, CentOS, etc.
 UBUNTU ?= $(shell if [ -e /etc/lsb-release ]; then grep DISTRIB_ID /etc/lsb-release | cut -d '=' -f2; fi)
 RHEL   ?= $(shell if [ -e /etc/redhat-release ]; then grep -i release /etc/redhat-release | cut -d ' ' -f7; fi)
 SLE    ?= $(shell if [ -e /etc/SuSE-release ]; then grep -i version /etc/SuSE-release | cut -d ' ' -f3; fi)
@@ -86,8 +85,12 @@ CENTOS ?= $(shell if [ -e /etc/redhat-release ]; then grep -i release /etc/redha
 
 # darwin or linux?
 ifeq ($(OS),Darwin)
-	#BUILD_ARCH := -arch i386 -arch ppc
-	BUILD_ARCH := -arch i386 -arch x86_64
+	# Apple Silicon (M1/M2) or Intel
+	ifeq ($(ARCHTYPE),arm64)
+		BUILD_ARCH := -arch arm64
+	else
+		BUILD_ARCH := -arch x86_64
+	endif
 	LIBDIR    := $(DESTDIR)/usr/local/lib
 	LIBTOOL   := libtool -static -o
 	SOEXT     := dylib
@@ -97,16 +100,14 @@ ifeq ($(OS),Darwin)
 	CFLAGS    += -D_DARWIN_SOURCE -D_DARWIN_C_SOURCE
 	LIBNAME    = $(PROG).$(VERSION).$(SOEXT)
 	PLATFORM  := -DTOSDARWIN
-else
-	ifeq ($(OS),Linux)
-		SOEXT     := so
-		BUILD_LIB := -shared -Wl,-O1 -Wl,-soname,$(PROG).$(SOEXT).$(VERMAJOR) \
+else ifeq ($(OS),Linux)
+	SOEXT     := so
+	BUILD_LIB := -shared -Wl,-O1 -Wl,-soname,$(PROG).$(SOEXT).$(VERMAJOR) \
 		 			 -static-libgcc
-		LIBTOOL   := ar rvcs
-		CLIB      := -lc
-		LIBNAME   := $(PROG).$(SOEXT).$(VERSION)
-		PLATFORM  := -DTOSLINUX
-	endif
+	LIBTOOL   := ar rvcs
+	CLIB      := -lc
+	LIBNAME   := $(PROG).$(SOEXT).$(VERSION)
+	PLATFORM  := -DTOSLINUX
 endif
 
 all: clean $(PROGOBJS) $(LIBNAME) $(TESTPROG)
@@ -129,7 +130,6 @@ $(TESTPROG): $(TESTPROG).o flog.o
 	@echo 'Finished building target: $@'
 	@echo
 
-#$(LIBNAME): $(PROGOBJS)
 $(LIBNAME): flog.o
 	@printf "#\n# Building $@\n"
 	$(CC) $(BUILD_ARCH) $(BUILD_LIB) $(OUTPUT_OPTION) $^ $(CLIB)
@@ -182,3 +182,5 @@ uninstall:
 	@printf "# Removing $(PROG) from $(LIBDIR) if it exists...\n"
 	$(RM) $(LIBDIR)/$(PROG).*
 	@printf "# ...finito\n"
+
+	
